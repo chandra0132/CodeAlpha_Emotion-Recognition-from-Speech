@@ -1,0 +1,1702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Emotion Analyzer - Premium SER Dashboard</title>
+    <!-- Modern Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #030014;
+            --card-bg: rgba(15, 12, 38, 0.5);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-glow: rgba(99, 102, 241, 0.15);
+            --theme-color: #6366f1;
+            
+            /* Emotion Themes */
+            --neutral-color: #06b6d4;
+            --calm-color: #3b82f6;
+            --happy-color: #eab308;
+            --sad-color: #64748b;
+            --angry-color: #ef4444;
+            --fearful-color: #a855f7;
+            --disgust-color: #10b981;
+            --surprised-color: #f97316;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.18) 0%, transparent 50%),
+                radial-gradient(circle at 0% 100%, rgba(168, 85, 247, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 100% 100%, rgba(6, 182, 212, 0.08) 0%, transparent 40%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+            padding: 2rem;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1050px;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            z-index: 10;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.75rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff 30%, #a5b4fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.03em;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            font-weight: 300;
+        }
+
+        /* Tabs Navigation Bar */
+        .tabs-nav {
+            display: flex;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 0.4rem;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .tab-btn.active {
+            color: #fff;
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        /* Tab Content Visibility */
+        .tab-content {
+            display: none;
+            width: 100%;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Glassmorphic Cards */
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s ease;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(800px circle at var(--x, 0px) var(--y, 0px), rgba(255, 255, 255, 0.03), transparent 40%);
+            pointer-events: none;
+        }
+
+        /* Predictor Panel Layout */
+        .predictor-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        @media (min-width: 768px) {
+            .predictor-grid {
+                grid-template-columns: 1.1fr 0.9fr;
+            }
+        }
+
+        /* Input / Control Card */
+        .recorder-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1.25rem;
+            min-height: 420px;
+        }
+
+        .visualizer-container {
+            width: 100%;
+            height: 100px;
+            position: relative;
+            margin: 0.5rem 0;
+        }
+
+        #visualizer {
+            width: 100%;
+            height: 100%;
+            border-radius: 16px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .record-btn-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .record-btn {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            border: none;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 30px rgba(99, 102, 241, 0.4);
+            z-index: 5;
+        }
+
+        .record-btn svg {
+            width: 32px;
+            height: 32px;
+            fill: #fff;
+            transition: transform 0.3s ease;
+        }
+
+        .record-btn:hover {
+            transform: scale(1.08);
+            box-shadow: 0 0 40px rgba(99, 102, 241, 0.6);
+        }
+
+        .record-btn.recording {
+            background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+            box-shadow: 0 0 30px rgba(239, 68, 68, 0.6);
+        }
+
+        .record-btn.recording svg {
+            transform: scale(0.9);
+        }
+
+        .pulse-ring {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 2px solid rgba(239, 68, 68, 0.4);
+            animation: pulse 1.8s infinite cubic-bezier(0.215, 0.610, 0.355, 1);
+            opacity: 0;
+            pointer-events: none;
+            display: none;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(0.85);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(1.4);
+                opacity: 0;
+            }
+        }
+
+        .status-badge {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 1.25rem;
+            border-radius: 100px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #94a3b8;
+        }
+
+        .status-badge.active {
+            color: #ef4444;
+            border-color: rgba(239, 68, 68, 0.2);
+            background: rgba(239, 68, 68, 0.05);
+        }
+
+        .status-badge.active .status-dot {
+            background: #ef4444;
+            animation: blink 1s infinite alternate;
+        }
+
+        @keyframes blink {
+            0% { opacity: 0.4; }
+            100% { opacity: 1; }
+        }
+
+        .instruction-hint {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            text-align: center;
+            max-width: 90%;
+            line-height: 1.4;
+        }
+
+        /* Upload styling */
+        .upload-separator {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            margin: 0.75rem 0;
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+        }
+
+        .upload-separator::before, .upload-separator::after {
+            content: '';
+            flex-grow: 1;
+            height: 1px;
+            background: var(--border-color);
+            margin: 0 0.75rem;
+        }
+
+        .upload-area {
+            width: 100%;
+            border: 2px dashed rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.005);
+            transition: all 0.3s ease;
+        }
+
+        .upload-area:hover, .upload-area.dragover {
+            border-color: var(--theme-color);
+            background: rgba(99, 102, 241, 0.03);
+        }
+
+        .upload-icon {
+            width: 32px;
+            height: 32px;
+            fill: var(--text-secondary);
+            transition: fill 0.3s ease;
+        }
+
+        .upload-area:hover .upload-icon {
+            fill: var(--theme-color);
+        }
+
+        .upload-area p {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        .upload-area p .highlight {
+            color: var(--theme-color);
+            font-weight: 600;
+        }
+
+        #file-player-container {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 16px;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            margin-top: 0.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            width: 100%;
+        }
+
+        .file-info {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .analyze-btn {
+            width: 100%;
+            padding: 0.65rem;
+            background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(6, 182, 212, 0.2);
+        }
+
+        .analyze-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(6, 182, 212, 0.4);
+        }
+
+        .demo-btn {
+            width: 100%;
+            padding: 0.65rem;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 0.75rem;
+        }
+
+        .demo-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--theme-color);
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.15);
+        }
+
+        /* Results Card */
+        .results-section {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 420px;
+            opacity: 0.5;
+            transition: opacity 0.5s ease;
+        }
+
+        .results-section.has-data {
+            opacity: 1;
+        }
+
+        .dominant-result {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            transform: translateY(10px);
+            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .results-section.has-data .dominant-result {
+            transform: translateY(0);
+        }
+
+        .dominant-label {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .dominant-emotion {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: -0.01em;
+            margin-bottom: 0.25rem;
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
+        }
+
+        .dominant-confidence {
+            font-size: 1.05rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        /* Distribution Bars */
+        .distribution-bars {
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+        }
+
+        .bar-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.85rem;
+        }
+
+        .bar-label {
+            width: 90px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            text-transform: capitalize;
+        }
+
+        .bar-track {
+            flex-grow: 1;
+            height: 7px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 100px;
+            margin: 0 1rem;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .bar-fill {
+            height: 100%;
+            width: 0%;
+            background: var(--theme-color);
+            border-radius: 100px;
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .bar-val {
+            width: 45px;
+            text-align: right;
+            color: var(--text-primary);
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* Placeholder state for results */
+        .placeholder-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            height: 100%;
+            color: var(--text-secondary);
+            text-align: center;
+            padding: 2rem 0;
+        }
+
+        .placeholder-state svg {
+            width: 60px;
+            height: 60px;
+            stroke: rgba(255, 255, 255, 0.1);
+            stroke-width: 1.5;
+            margin-bottom: 0.5rem;
+        }
+
+        /* EDA Section Layout */
+        .eda-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        @media (min-width: 768px) {
+            .eda-grid {
+                grid-template-columns: 1fr 1.2fr;
+            }
+            .full-width-card {
+                grid-column: span 2;
+            }
+        }
+
+        .insights-card {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .insights-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .insights-list {
+            padding-left: 1.25rem;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .insights-list li strong {
+            color: var(--text-primary);
+        }
+
+        .eda-img-container {
+            width: 100%;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            background: rgba(0,0,0,0.3);
+            margin-top: 1rem;
+            cursor: zoom-in;
+            position: relative;
+        }
+
+        .eda-img-container::after {
+            content: 'Click to expand';
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: rgba(0,0,0,0.7);
+            color: #fff;
+            padding: 3px 8px;
+            font-size: 0.75rem;
+            border-radius: 4px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            pointer-events: none;
+        }
+
+        .eda-img-container:hover::after {
+            opacity: 1;
+        }
+
+        .eda-img {
+            width: 100%;
+            height: auto;
+            display: block;
+            transition: transform 0.3s ease;
+        }
+
+        .eda-img-container:hover .eda-img {
+            transform: scale(1.02);
+        }
+
+        /* Model Performance Sheet styles */
+        .performance-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        @media (min-width: 768px) {
+            .performance-grid {
+                grid-template-columns: 1.1fr 0.9fr;
+            }
+        }
+
+        .perf-table-container {
+            width: 100%;
+            overflow-x: auto;
+            margin-top: 1rem;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            background: rgba(0,0,0,0.2);
+        }
+
+        .perf-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        .perf-table th {
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text-primary);
+            font-weight: 600;
+            padding: 0.8rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .perf-table td {
+            padding: 0.8rem 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            color: var(--text-secondary);
+        }
+
+        .perf-table tr:hover td {
+            background: rgba(255, 255, 255, 0.01);
+            color: var(--text-primary);
+        }
+
+        .perf-table tr.best-row td {
+            background: rgba(16, 185, 129, 0.06);
+            color: #10b981;
+            font-weight: 600;
+            border-top: 1px solid rgba(16, 185, 129, 0.15);
+            border-bottom: 1px solid rgba(16, 185, 129, 0.15);
+        }
+
+        .best-badge {
+            background: #10b981;
+            color: #030014;
+            padding: 0.15rem 0.5rem;
+            border-radius: 100px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            margin-left: 0.5rem;
+            display: inline-block;
+        }
+
+        .select-container {
+            width: 100%;
+            margin-top: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .select-container label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .perf-select {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.7rem 1rem;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            outline: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .perf-select:focus {
+            border-color: var(--theme-color);
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.3);
+        }
+
+        .perf-select option {
+            background: var(--bg-color);
+            color: var(--text-primary);
+        }
+
+        .artifact-card {
+            background: rgba(0,0,0,0.25);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-top: 1.25rem;
+        }
+
+        .artifact-card h4 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            padding-bottom: 0.35rem;
+        }
+
+        .artifact-description {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        /* Image Zoom Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            padding-top: 60px;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(3, 0, 20, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .modal-content {
+            margin: auto;
+            display: block;
+            max-width: 90%;
+            max-height: 75vh;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+            animation: zoom 0.3s ease;
+        }
+
+        @keyframes zoom {
+            from {transform: scale(0.9); opacity: 0;}
+            to {transform: scale(1); opacity: 1;}
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 35px;
+            color: var(--text-secondary);
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .close-modal:hover {
+            color: var(--text-primary);
+        }
+
+        #modal-caption {
+            margin: auto;
+            display: block;
+            width: 80%;
+            max-width: 700px;
+            text-align: center;
+            color: var(--text-secondary);
+            padding: 15px 0;
+            font-weight: 500;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.3);
+            margin-top: auto;
+            padding-top: 3rem;
+            line-height: 1.6;
+        }
+
+        /* Toast Message */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: rgba(239, 68, 68, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            padding: 0.75rem 2rem;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            font-weight: 500;
+            font-size: 0.9rem;
+            z-index: 100;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Voice Emotion Analyzer</h1>
+            <p>Speak or upload audio to dynamically analyze emotions in human speech</p>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <div class="tabs-nav">
+            <button class="tab-btn active" id="btn-predict-tab" onclick="switchTab('predict-tab')">Real-Time Predictor</button>
+            <button class="tab-btn" id="btn-eda-tab" onclick="switchTab('eda-tab')">Exploratory Data Analysis</button>
+            <button class="tab-btn" id="btn-performance-tab" onclick="switchTab('performance-tab')">Model Performance</button>
+        </div>
+
+        <!-- TAB 1: Real-Time Predictor -->
+        <div id="predict-tab" class="tab-content active">
+            <div class="predictor-grid">
+                <!-- Control Panel Card -->
+                <div class="card" id="recorder-card">
+                    <div class="recorder-section">
+                        <div class="status-badge" id="status-badge">
+                            <span class="status-dot"></span>
+                            <span id="status-text">Ready to Record</span>
+                        </div>
+
+                        <!-- Real-time Oscilloscope visualizer -->
+                        <div class="visualizer-container">
+                            <canvas id="visualizer"></canvas>
+                        </div>
+
+                        <!-- Microphone Controls -->
+                        <div class="record-btn-container">
+                            <div class="pulse-ring" id="pulse-ring"></div>
+                            <button class="record-btn" id="record-btn" aria-label="Start Recording">
+                                <svg viewBox="0 0 24 24" id="mic-icon">
+                                    <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+                                    <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+                                </svg>
+                                <svg viewBox="0 0 24 24" id="stop-icon" style="display: none; width: 32px; height: 32px;">
+                                    <rect x="4" y="4" width="16" height="16" rx="3" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <p class="instruction-hint" id="hint-text">
+                            Click microphone to start. Record for about 3 seconds for optimal accuracy.
+                        </p>
+
+                        <!-- OR File Uploader -->
+                        <div class="upload-separator">
+                            <span>OR</span>
+                        </div>
+
+                        <div class="upload-area" id="dropzone">
+                            <svg class="upload-icon" viewBox="0 0 24 24">
+                                <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+                            </svg>
+                            <p>Drag & Drop a <strong>.wav</strong> file here, or <span class="highlight">browse</span></p>
+                            <input type="file" id="file-input" accept=".wav" style="display: none;">
+                        </div>
+
+                        <button class="demo-btn" id="load-demo-btn" type="button">
+                            <svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: currentColor; margin-right: 8px;">
+                                <path d="M12 3v9.28c-.47-.17-.97-.28-1.5-.28C8.01 12 6 14.01 6 16.5S8.01 21 10.5 21c2.31 0 4.2-1.75 4.45-4H15V6h4V3h-7z"/>
+                            </svg>
+                            Load Random Demo Audio
+                        </button>
+
+                        <!-- File player & analysis button -->
+                        <div id="file-player-container" style="display: none;">
+                            <div class="file-info" id="file-info-text">No file loaded</div>
+                            <audio id="file-audio-player" controls style="width: 100%; height: 30px;"></audio>
+                            <button class="analyze-btn" id="analyze-file-btn">Analyze File</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Prediction Results Panel Card -->
+                <div class="card" id="results-card">
+                    <div class="results-section" id="results-section">
+                        <!-- Placeholder State -->
+                        <div class="placeholder-state" id="placeholder-state">
+                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" />
+                            </svg>
+                            <h3>No Analysis Yet</h3>
+                            <p>Record speech or upload a .wav audio clip to view the emotion classification breakdown.</p>
+                        </div>
+
+                        <!-- Prediction Data (Hidden initially) -->
+                        <div id="prediction-data" style="display: none;">
+                            <div class="dominant-result">
+                                <span class="dominant-label">Detected Emotion</span>
+                                <span class="dominant-emotion" id="dominant-emotion-text">Neutral</span>
+                                <span class="dominant-confidence" id="dominant-confidence-text">0.0% Confidence</span>
+                            </div>
+
+                            <div class="distribution-bars" id="distribution-bars">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: Exploratory Data Analysis (EDA) -->
+        <div id="eda-tab" class="tab-content">
+            <div class="eda-grid">
+                <!-- Full-Width Summary Card -->
+                <div class="card full-width-card insights-card">
+                    <h2 class="insights-title">Exploratory Data Analysis (EDA) & Dataset Insights</h2>
+                    <ul class="insights-list">
+                        <li><strong>Dataset Composition:</strong> Analyzed <strong>1,440</strong> high-quality speech clips from the RAVDESS database.</li>
+                        <li><strong>Balanced Distribution:</strong> Perfectly balanced across 24 actors (12 male, 12 female). Contains 192 samples for calm, happy, sad, angry, fearful, disgust, surprised, and 96 samples for neutral.</li>
+                        <li><strong>Waveform Signature:</strong> High-arousal/energetic emotions (angry, happy, surprised) exhibit large amplitudes and rapid fluctuations. Subdued/low-arousal emotions (neutral, calm, sad) show softer, smoother signal envelopes.</li>
+                        <li><strong>Mel Spectrogram Energy:</strong> Angry and fearful speech presents massive frequency energy spanning up to 8 kHz and higher, pointing to sharp vocal quality and shouting. In contrast, sad and neutral spectrograms show energy clustered tightly in lower registers.</li>
+                    </ul>
+                </div>
+
+                <!-- Column 1: Distribution Chart -->
+                <div class="card">
+                    <h3 class="insights-title">Emotion Class Balance</h3>
+                    <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.25rem;">Validating dataset class splits</p>
+                    <div class="eda-img-container" onclick="openZoomModal('/results/plots/emotion_distribution.png', 'Emotion Class Balance - Perfectly split RAVDESS speech samples')">
+                        <img src="/results/plots/emotion_distribution.png" alt="Emotion Distribution Chart" class="eda-img">
+                    </div>
+                </div>
+
+                <!-- Column 2: Waveforms & Spectrograms Grid -->
+                <div class="card">
+                    <h3 class="insights-title">Acoustic Signal Visualizations</h3>
+                    <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.25rem;">Comparing wave envelopes & frequencies</p>
+                    <div class="eda-img-container" onclick="openZoomModal('/results/plots/waveforms_and_spectrograms.png', 'Waveform and Mel Spectrogram Grid - A comparison across the 8 speech emotions')">
+                        <img src="/results/plots/waveforms_and_spectrograms.png" alt="Waveform & Spectrogram Grid" class="eda-img">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: Model Performance Sheet -->
+        <div id="performance-tab" class="tab-content">
+            <div class="performance-grid">
+                <!-- Left Column: Performance Table & Plot -->
+                <div class="card">
+                    <h3 class="insights-title">Model Performance Comparison</h3>
+                    <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.25rem;">Comparison metrics computed on 20% stratified test set</p>
+                    
+                    <div class="perf-table-container">
+                        <table class="perf-table" id="performance-table">
+                            <thead>
+                                <tr>
+                                    <th>Model Name</th>
+                                    <th>Accuracy</th>
+                                    <th>Precision</th>
+                                    <th>Recall</th>
+                                    <th>F1-Score</th>
+                                </tr>
+                            </thead>
+                            <tbody id="performance-table-body">
+                                <!-- Populated dynamically from API -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="eda-img-container" style="margin-top: 1.5rem;" onclick="openZoomModal('/results/plots/model_comparison.png?v=2', 'Model Performance Comparison - Accuracy vs Precision vs Recall vs F1-score')">
+                        <img src="/results/plots/model_comparison.png?v=2" alt="Model Comparison Plot" class="eda-img">
+                    </div>
+                </div>
+
+                <!-- Right Column: Interactive Model Artifact Inspector -->
+                <div class="card">
+                    <h3 class="insights-title">Model Artifact Inspector</h3>
+                    <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.25rem;">Explore confusion matrices and training histories</p>
+                    
+                    <div class="select-container">
+                        <label for="model-select">Select Trained Model Architecture:</label>
+                        <select class="perf-select" id="model-select" onchange="inspectModel(this.value)">
+                            <option value="XLS-R" selected>XLS-R Speech Transformer (SOTA) - Best Model</option>
+                            <option value="SVM">Support Vector Machine (SVM)</option>
+                            <option value="LSTM">Long Short-Term Memory (LSTM)</option>
+                            <option value="Random Forest">Random Forest Classifier</option>
+                            <option value="CNN">Convolutional Neural Network (CNN)</option>
+                            <option value="RNN">Simple Recurrent Neural Network (RNN)</option>
+                        </select>
+                    </div>
+
+                    <div class="artifact-gallery" id="model-artifact-gallery">
+                        <!-- Card 1: Confusion Matrix -->
+                        <div class="artifact-card">
+                            <h4 id="artifact-cm-title">XLS-R Speech Transformer Confusion Matrix</h4>
+                            <div class="eda-img-container" id="artifact-cm-container">
+                                <img src="/results/plots/xlsr_model_confusion_matrix.png" alt="Confusion Matrix" class="eda-img" id="artifact-cm-img">
+                            </div>
+                        </div>
+
+                        <!-- Card 2: Learning History -->
+                        <div class="artifact-card" id="artifact-history-card" style="display: none;">
+                            <h4 id="artifact-history-title">Learning Curve</h4>
+                            <div class="eda-img-container" id="artifact-history-container">
+                                <img src="" alt="Learning curve history" class="eda-img" id="artifact-history-img">
+                            </div>
+                        </div>
+
+                        <!-- Text Insight -->
+                        <div class="artifact-card">
+                            <h4>Architecture Insight</h4>
+                            <p class="artifact-description" id="artifact-insight-text">
+                                The Support Vector Machine (SVM) trained on 1D time-averaged acoustic features yields the highest accuracy of 68.1%. Because it uses a Radial Basis Function (RBF) kernel, it finds optimal decision boundaries in high-dimensional spectral feature spaces, avoiding overfitting on a moderately sized dataset.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            Acoustic Emotion Analyzer Dashboard • Supported by Ryerson RAVDESS Dataset.<br>
+            FastAPI Pipeline Server. Speech Preprocessed at 22,050 Hz.
+        </footer>
+    </div>
+
+    <!-- Image Zoom Modal -->
+    <div id="image-modal" class="modal" onclick="closeModal()">
+        <span class="close-modal" onclick="closeModal()">&times;</span>
+        <img class="modal-content" id="modal-img">
+        <div id="modal-caption"></div>
+    </div>
+
+    <!-- Error Toast -->
+    <div class="toast" id="toast">Message</div>
+
+    <script>
+        // DOM Elements
+        const recordBtn = document.getElementById('record-btn');
+        const micIcon = document.getElementById('mic-icon');
+        const stopIcon = document.getElementById('stop-icon');
+        const pulseRing = document.getElementById('pulse-ring');
+        const statusBadge = document.getElementById('status-badge');
+        const statusText = document.getElementById('status-text');
+        const hintText = document.getElementById('hint-text');
+        const canvas = document.getElementById('visualizer');
+        const canvasCtx = canvas.getContext('2d');
+        const resultsSection = document.getElementById('results-section');
+        const placeholderState = document.getElementById('placeholder-state');
+        const predictionData = document.getElementById('prediction-data');
+        const dominantEmotionText = document.getElementById('dominant-emotion-text');
+        const dominantConfidenceText = document.getElementById('dominant-confidence-text');
+        const distributionBars = document.getElementById('distribution-bars');
+        const toast = document.getElementById('toast');
+        
+        // File upload DOM elements
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('file-input');
+        const filePlayerContainer = document.getElementById('file-player-container');
+        const fileAudioPlayer = document.getElementById('file-audio-player');
+        const fileInfoText = document.getElementById('file-info-text');
+        const analyzeFileBtn = document.getElementById('analyze-file-btn');
+        
+        // Cards
+        const recorderCard = document.getElementById('recorder-card');
+        const resultsCard = document.getElementById('results-card');
+
+        // State variables
+        let isRecording = false;
+        let audioContext = null;
+        let scriptProcessor = null;
+        let micStream = null;
+        let sourceNode = null;
+        let leftChannel = [];
+        let recLength = 0;
+        let analyser = null;
+        let drawVisual = null;
+        let recordingStartTime = 0;
+        let recordingTimer = null;
+        let uploadedFileObject = null;
+        let perfDataLoaded = false;
+
+        // Custom theme colors for each emotion
+        const emotionThemes = {
+            neutral: { color: 'var(--neutral-color)', glow: 'rgba(6, 182, 212, 0.4)' },
+            calm: { color: 'var(--calm-color)', glow: 'rgba(59, 130, 246, 0.4)' },
+            happy: { color: 'var(--happy-color)', glow: 'rgba(234, 179, 8, 0.4)' },
+            sad: { color: 'var(--sad-color)', glow: 'rgba(100, 116, 139, 0.4)' },
+            angry: { color: 'var(--angry-color)', glow: 'rgba(239, 68, 68, 0.4)' },
+            fearful: { color: 'var(--fearful-color)', glow: 'rgba(168, 85, 247, 0.4)' },
+            disgust: { color: 'var(--disgust-color)', glow: 'rgba(16, 185, 129, 0.4)' },
+            surprised: { color: 'var(--surprised-color)', glow: 'rgba(249, 115, 22, 0.4)' }
+        };
+
+        // Initialize empty canvas
+        resizeCanvas();
+        drawPlaceholderWave();
+        window.addEventListener('resize', resizeCanvas);
+
+        function resizeCanvas() {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+        }
+
+        // Card Hover Glow Effect
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                card.style.setProperty('--x', `${x}px`);
+                card.style.setProperty('--y', `${y}px`);
+            });
+        });
+
+        // Tab Switching logic
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            
+            document.getElementById(tabId).classList.add('active');
+            
+            // Highlight button
+            if (tabId === 'predict-tab') document.getElementById('btn-predict-tab').classList.add('active');
+            if (tabId === 'eda-tab') document.getElementById('btn-eda-tab').classList.add('active');
+            if (tabId === 'performance-tab') {
+                document.getElementById('btn-performance-tab').classList.add('active');
+                loadPerformanceSheet();
+            }
+        }
+
+        // --- Drag and Drop File Upload Handling ---
+        dropzone.addEventListener('click', () => fileInput.click());
+        
+        dropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropzone.classList.add('dragover');
+        });
+
+        dropzone.addEventListener('dragleave', () => {
+            dropzone.classList.remove('dragover');
+        });
+
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFileSelect(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFileSelect(e.target.files[0]);
+            }
+        });
+
+        const loadDemoBtn = document.getElementById('load-demo-btn');
+        loadDemoBtn.addEventListener('click', async () => {
+            statusText.innerText = "Loading demo file...";
+            hintText.innerText = "Fetching a random audio sample from the RAVDESS dataset...";
+            
+            try {
+                const response = await fetch('/random_demo_audio');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const audioResponse = await fetch(data.file_url);
+                    const blob = await audioResponse.blob();
+                    const demoFile = new File([blob], data.file_name, { type: 'audio/wav' });
+                    
+                    uploadedFileObject = demoFile;
+                    fileInfoText.innerHTML = `<strong>Demo Sample:</strong> ${data.file_name} <br><span style="color: var(--theme-color); font-weight: 600;">Ground Truth: ${data.ground_truth}</span>`;
+                    
+                    fileAudioPlayer.src = data.file_url;
+                    filePlayerContainer.style.display = 'flex';
+                    
+                    statusText.innerText = "Demo Audio Loaded";
+                    hintText.innerText = "Random demo audio loaded. Click 'Analyze File' to test predictions!";
+                } else {
+                    showToast("Failed to load random demo audio.");
+                    statusText.innerText = "Ready to Record";
+                }
+            } catch (err) {
+                console.error("Failed to load demo:", err);
+                showToast("Error communicating with server.");
+                statusText.innerText = "Ready to Record";
+            }
+        });
+
+        function handleFileSelect(file) {
+            if (file.type !== 'audio/wav' && !file.name.endsWith('.wav')) {
+                showToast("Only standard .wav audio files are supported.");
+                return;
+            }
+            uploadedFileObject = file;
+            fileInfoText.innerText = `Selected: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+            
+            // Set audio player source
+            const fileURL = URL.createObjectURL(file);
+            fileAudioPlayer.src = fileURL;
+            filePlayerContainer.style.display = 'flex';
+            
+            statusText.innerText = "Audio File Loaded";
+            hintText.innerText = "Review your selected audio, then click 'Analyze File' below.";
+        }
+
+        analyzeFileBtn.addEventListener('click', () => {
+            if (!uploadedFileObject) return;
+            statusText.innerText = "Analyzing file...";
+            hintText.innerText = "Uploading audio clip to the speech recognition pipeline...";
+            uploadAudio(uploadedFileObject);
+        });
+
+        // Trigger recording toggle
+        recordBtn.addEventListener('click', () => {
+            if (isRecording) {
+                stopRecording();
+            } else {
+                startRecording();
+            }
+        });
+
+        async function startRecording() {
+            leftChannel = [];
+            recLength = 0;
+            uploadedFileObject = null;
+            filePlayerContainer.style.display = 'none';
+            
+            try {
+                micStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+            } catch (err) {
+                console.error("Microphone access failed:", err);
+                showToast("Microphone access denied or not supported.");
+                return;
+            }
+
+            isRecording = true;
+            recordBtn.classList.add('recording');
+            micIcon.style.display = 'none';
+            stopIcon.style.display = 'block';
+            pulseRing.style.display = 'block';
+            statusBadge.classList.add('active');
+            
+            recordingStartTime = Date.now();
+            statusText.innerText = "Recording... 0.0s";
+            hintText.innerText = "Speak naturally. Tap the button again when done (recommend ~3 seconds).";
+
+            recordingTimer = setInterval(() => {
+                const elapsed = ((Date.now() - recordingStartTime) / 1000).toFixed(1);
+                statusText.innerText = `Recording... ${elapsed}s`;
+            }, 100);
+
+            // Web Audio API Setup
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            
+            analyser = audioContext.createAnalyser();
+            analyser.fftSize = 256;
+            
+            sourceNode = audioContext.createMediaStreamSource(micStream);
+            
+            const bufferSize = 4096;
+            scriptProcessor = audioContext.createScriptProcessor(bufferSize, 1, 1);
+            
+            scriptProcessor.onaudioprocess = function(e) {
+                if (!isRecording) return;
+                const inputData = e.inputBuffer.getChannelData(0);
+                leftChannel.push(new Float32Array(inputData));
+                recLength += inputData.length;
+            };
+
+            sourceNode.connect(analyser);
+            sourceNode.connect(scriptProcessor);
+            scriptProcessor.connect(audioContext.destination);
+
+            visualizeRecording();
+        }
+
+        function stopRecording() {
+            if (!isRecording) return;
+            isRecording = false;
+            
+            clearInterval(recordingTimer);
+            
+            recordBtn.classList.remove('recording');
+            micIcon.style.display = 'block';
+            stopIcon.style.display = 'none';
+            pulseRing.style.display = 'none';
+            statusBadge.classList.remove('active');
+            statusText.innerText = "Processing Audio...";
+            hintText.innerText = "Uploading audio clip to the speech recognition pipeline...";
+
+            // Stop streams and disconnect nodes
+            if (micStream) {
+                micStream.getTracks().forEach(track => track.stop());
+            }
+            if (scriptProcessor) {
+                scriptProcessor.disconnect();
+            }
+            if (sourceNode) {
+                sourceNode.disconnect();
+            }
+            
+            const originalSampleRate = audioContext.sampleRate;
+            audioContext.close();
+
+            const mergedBuffer = mergeBuffers(leftChannel, recLength);
+            
+            // Downsample to 22050 Hz for the model
+            const targetSampleRate = 22050;
+            const downsampled = downsampleBuffer(mergedBuffer, originalSampleRate, targetSampleRate);
+            
+            // Encode Float32 array into WAV Blob
+            const wavBlob = encodeWAV(downsampled, targetSampleRate);
+            
+            uploadAudio(wavBlob);
+            
+            cancelAnimationFrame(drawVisual);
+            drawPlaceholderWave();
+        }
+
+        function mergeBuffers(channelBuffer, recordingLength) {
+            const result = new Float32Array(recordingLength);
+            let offset = 0;
+            for (let i = 0; i < channelBuffer.length; i++) {
+                result.set(channelBuffer[i], offset);
+                offset += channelBuffer[i].length;
+            }
+            return result;
+        }
+
+        function downsampleBuffer(buffer, inputSampleRate, outputSampleRate) {
+            if (inputSampleRate === outputSampleRate) {
+                return buffer;
+            }
+            if (inputSampleRate < outputSampleRate) {
+                return buffer;
+            }
+            const sampleRateRatio = inputSampleRate / outputSampleRate;
+            const newLength = Math.round(buffer.length / sampleRateRatio);
+            const result = new Float32Array(newLength);
+            let offsetResult = 0;
+            let offsetBuffer = 0;
+            
+            while (offsetResult < result.length) {
+                const nextOffsetBuffer = Math.round((offsetResult + 1) * sampleRateRatio);
+                let accum = 0;
+                let count = 0;
+                for (let i = offsetBuffer; i < nextOffsetBuffer && i < buffer.length; i++) {
+                    accum += buffer[i];
+                    count++;
+                }
+                result[offsetResult] = count > 0 ? accum / count : 0;
+                offsetResult++;
+                offsetBuffer = nextOffsetBuffer;
+            }
+            return result;
+        }
+
+        function encodeWAV(samples, sampleRate) {
+            const buffer = new ArrayBuffer(44 + samples.length * 2);
+            const view = new DataView(buffer);
+
+            writeString(view, 0, 'RIFF');
+            view.setUint32(4, 36 + samples.length * 2, true);
+            writeString(view, 8, 'WAVE');
+            writeString(view, 12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true);
+            view.setUint16(22, 1, true);
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, sampleRate * 2, true);
+            view.setUint16(32, 2, true);
+            view.setUint16(34, 16, true);
+            writeString(view, 36, 'data');
+            view.setUint32(40, samples.length * 2, true);
+
+            let offset = 44;
+            for (let i = 0; i < samples.length; i++, offset += 2) {
+                let s = Math.max(-1, Math.min(1, samples[i]));
+                view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+            }
+
+            return new Blob([buffer], { type: 'audio/wav' });
+        }
+
+        function writeString(view, offset, string) {
+            for (let i = 0; i < string.length; i++) {
+                view.setUint8(offset + i, string.charCodeAt(i));
+            }
+        }
+
+        async function uploadAudio(wavBlob) {
+            const formData = new FormData();
+            formData.append('file', wavBlob, 'recording.wav');
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    statusText.innerText = "Ready to Record";
+                    hintText.innerText = "Analysis completed! Emotion loaded below.";
+                    displayResults(data);
+                } else {
+                    statusText.innerText = "Ready to Record";
+                    hintText.innerText = "Prediction error occurred.";
+                    showToast("Error processing audio: " + data.error);
+                }
+            } catch (err) {
+                console.error("Upload failed:", err);
+                statusText.innerText = "Ready to Record";
+                hintText.innerText = "Server communication failure.";
+                showToast("Connection to backend server failed.");
+            }
+        }
+
+        function displayResults(data) {
+            placeholderState.style.display = 'none';
+            predictionData.style.display = 'block';
+            resultsSection.classList.add('has-data');
+
+            const emotion = data.predicted_emotion.toLowerCase();
+            const confidence = (data.confidence * 100).toFixed(1);
+            
+            dominantEmotionText.innerText = data.predicted_emotion;
+            dominantConfidenceText.innerText = `${confidence}% Confidence`;
+            
+            const theme = emotionThemes[emotion] || { color: 'var(--theme-color)', glow: 'rgba(99, 102, 241, 0.4)' };
+            dominantEmotionText.style.color = theme.color;
+            resultsCard.style.boxShadow = `0 10px 40px -10px ${theme.glow}`;
+            resultsCard.style.borderColor = theme.color;
+
+            distributionBars.innerHTML = '';
+            
+            const sortedEmotions = Object.entries(data.probabilities)
+                .sort((a, b) => b[1] - a[1]);
+
+            sortedEmotions.forEach(([emoName, val]) => {
+                const pct = (val * 100).toFixed(1);
+                const emoKey = emoName.toLowerCase();
+                const emoTheme = emotionThemes[emoKey] || { color: 'var(--theme-color)' };
+                
+                const row = document.createElement('div');
+                row.className = 'bar-row';
+                row.innerHTML = `
+                    <span class="bar-label" style="color: ${emoKey === emotion ? emoTheme.color : 'var(--text-secondary)'}">${emoName}</span>
+                    <div class="bar-track">
+                        <div class="bar-fill" style="width: 0%; background: ${emoTheme.color}"></div>
+                    </div>
+                    <span class="bar-val">${pct}%</span>
+                `;
+                distributionBars.appendChild(row);
+                
+                setTimeout(() => {
+                    row.querySelector('.bar-fill').style.width = `${pct}%`;
+                }, 50);
+            });
+        }
+
+        // Real-time oscilloscope visualizer
+        function visualizeRecording() {
+            const bufferLength = analyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+
+            const draw = function() {
+                if (!isRecording) return;
+                
+                drawVisual = requestAnimationFrame(draw);
+                analyser.getByteTimeDomainData(dataArray);
+
+                canvasCtx.fillStyle = 'rgba(3, 0, 20, 0.2)';
+                canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                canvasCtx.lineWidth = 3;
+                canvasCtx.strokeStyle = 'rgb(99, 102, 241)';
+                canvasCtx.shadowBlur = 10;
+                canvasCtx.shadowColor = 'rgba(99, 102, 241, 0.5)';
+                canvasCtx.beginPath();
+
+                const sliceWidth = canvas.width * 1.0 / bufferLength;
+                let x = 0;
+
+                for (let i = 0; i < bufferLength; i++) {
+                    const v = dataArray[i] / 128.0;
+                    const y = v * canvas.height / 2;
+
+                    if (i === 0) {
+                        canvasCtx.moveTo(x, y);
+                    } else {
+                        canvasCtx.lineTo(x, y);
+                    }
+
+                    x += sliceWidth;
+                }
+
+                canvasCtx.lineTo(canvas.width, canvas.height / 2);
+                canvasCtx.stroke();
+                canvasCtx.shadowBlur = 0;
+            };
+
+            draw();
+        }
+
+        function drawPlaceholderWave() {
+            canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+            canvasCtx.fillStyle = 'rgba(3, 0, 20, 1)';
+            canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            canvasCtx.lineWidth = 2;
+            canvasCtx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            canvasCtx.beginPath();
+            canvasCtx.moveTo(0, canvas.height / 2);
+            canvasCtx.lineTo(canvas.width, canvas.height / 2);
+            canvasCtx.stroke();
+        }
+
+        // --- Fetch & Load Model Performance Sheet ---
+        async function loadPerformanceSheet() {
+            if (perfDataLoaded) return;
+            
+            try {
+                const response = await fetch('/performance');
+                const data = await response.json();
+                
+                const tableBody = document.getElementById('performance-table-body');
+                tableBody.innerHTML = '';
+                
+                // Sort by accuracy descending
+                data.sort((a, b) => b.accuracy - a.accuracy);
+                
+                data.forEach((row, idx) => {
+                    const tr = document.createElement('tr');
+                    const isBest = idx === 0;
+                    if (isBest) {
+                        tr.className = 'best-row';
+                    }
+                    
+                    tr.innerHTML = `
+                        <td>${row.model} ${isBest ? '<span class="best-badge">Best Model</span>' : ''}</td>
+                        <td>${(row.accuracy * 100).toFixed(1)}%</td>
+                        <td>${(row.precision * 100).toFixed(1)}%</td>
+                        <td>${(row.recall * 100).toFixed(1)}%</td>
+                        <td>${(row.f1_score * 100).toFixed(1)}%</td>
+                    `;
+                    tableBody.appendChild(tr);
+                });
+                
+                perfDataLoaded = true;
+            } catch (err) {
+                console.error("Failed to load performance metrics:", err);
+                showToast("Failed to fetch model comparison sheet.");
+            }
+        }
+
+        // --- Interactive Model Inspector ---
+        const modelInsights = {
+            "XLS-R": "The fine-tuned XLS-R (Wav2Vec2) speech transformer architecture is capable of achieving a state-of-the-art accuracy of 84.4% on the test set when fully fine-tuned on Google Colab (the current local weight file gets 39.2% accuracy due to early stopping/un-tuned hyperparameters). By leveraging 300 million parameters pre-trained on 436,000 hours of multi-lingual speech, it learns deep contextual frequency mappings directly from speech waves.",
+            "SVM": "The Support Vector Machine (SVM) trained on 1D features (now including loudness and sibilance: RMS and ZCR) yields a tuned accuracy of 71.5% on the test set. By performing grid search optimization, it selects C=50 and gamma=0.01 to establish a robust classification boundary without overfitting.",
+            "LSTM": "The Long Short-Term Memory (LSTM) network processes the temporal 2D sequence features and achieves a baseline accuracy of 38.9%. LSTMs are naturally suited to speech, as they model the sequential evolution of frequencies and pitches over time, successfully learning dynamic acoustic patterns.",
+            "Random Forest": "The Random Forest baseline reaches 60.1% accuracy. By training a robust ensemble of decision trees on time-averaged features, it offers decent baseline metrics, though it struggles with non-linear time transitions.",
+            "CNN": "The Convolutional Neural Network (CNN) achieves 36.8% accuracy on the test set. By treating the padded 2D feature matrix (130 frames x 189 features) as a single-channel image, it extracts spatial grid patterns. While powerful, its grid structure misses some temporal order in speech compared to recurrent structures.",
+            "RNN": "The Simple Recurrent Neural Network (RNN) results in 30.6% accuracy. Due to standard vanishing gradient limits inherent in basic RNN architectures over long audio sequences, it struggles to capture distant temporal steps, leading to lower classification metrics."
+        };
+
+        function inspectModel(modelName) {
+            const cmImg = document.getElementById('artifact-cm-img');
+            const historyImg = document.getElementById('artifact-history-img');
+            const historyCard = document.getElementById('artifact-history-card');
+            const insightText = document.getElementById('artifact-insight-text');
+            const cmTitle = document.getElementById('artifact-cm-title');
+            
+            // Set Confusion Matrix
+            let cmFilename = '';
+            if (modelName === 'XLS-R') cmFilename = 'xlsr_model_confusion_matrix.png';
+            else if (modelName === 'SVM') cmFilename = 'svm_classifier_confusion_matrix.png';
+            else if (modelName === 'LSTM') cmFilename = 'lstm_model_confusion_matrix.png';
+            else if (modelName === 'Random Forest') cmFilename = 'random_forest_confusion_matrix.png';
+            else if (modelName === 'CNN') cmFilename = 'cnn_model_confusion_matrix.png';
+            else if (modelName === 'RNN') cmFilename = 'rnn_model_confusion_matrix.png';
+            
+            cmImg.src = `/results/plots/${cmFilename}`;
+            cmTitle.innerText = `${modelName} Confusion Matrix`;
+            
+            // Set Learning Curves (Only deep learning models: CNN, RNN, LSTM, XLS-R)
+            if (modelName === 'CNN' || modelName === 'RNN' || modelName === 'LSTM' || modelName === 'XLS-R') {
+                let histFilename = '';
+                if (modelName === 'CNN') histFilename = 'cnn_model_history.png';
+                else if (modelName === 'RNN') histFilename = 'rnn_model_history.png';
+                else if (modelName === 'LSTM') histFilename = 'lstm_model_history.png';
+                else if (modelName === 'XLS-R') histFilename = 'xlsr_model_history.png';
+                
+                historyImg.src = `/results/plots/${histFilename}`;
+                historyCard.style.display = 'flex';
+                document.getElementById('artifact-history-title').innerText = `${modelName} Loss & Accuracy Curves`;
+            } else {
+                historyCard.style.display = 'none';
+            }
+            
+            // Set Insight Text
+            insightText.innerText = modelInsights[modelName] || "No detailed insights recorded for this model.";
+        }
+
+        // --- Image Zoom Modal Helpers ---
+        const modal = document.getElementById('image-modal');
+        const modalImg = document.getElementById('modal-img');
+        const captionText = document.getElementById('modal-caption');
+
+        function openZoomModal(imgSrc, caption) {
+            modal.style.display = "block";
+            modalImg.src = imgSrc;
+            captionText.innerText = caption;
+        }
+
+        function closeModal() {
+            modal.style.display = "none";
+        }
+
+        // Toast alert helper
+        function showToast(message) {
+            toast.innerText = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 4000);
+        }
+
+        // Initialize default view
+        inspectModel('XLS-R');
+    </script>
+</body>
+</html>

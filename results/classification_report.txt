@@ -1,0 +1,19 @@
+Best Model: SVM
+Accuracy: 0.7153
+
+Classification Report:
+======================
+              precision    recall  f1-score   support
+
+     neutral       0.60      0.63      0.62        19
+        calm       0.71      0.79      0.75        38
+       happy       0.69      0.63      0.66        38
+         sad       0.58      0.50      0.54        38
+       angry       0.82      0.79      0.81        39
+     fearful       0.71      0.74      0.72        39
+     disgust       0.76      0.82      0.78        38
+   surprised       0.79      0.77      0.78        39
+
+    accuracy                           0.72       288
+   macro avg       0.71      0.71      0.71       288
+weighted avg       0.71      0.72      0.71       288

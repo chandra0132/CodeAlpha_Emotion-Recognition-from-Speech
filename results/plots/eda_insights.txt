@@ -1,0 +1,20 @@
+EDA Observations and Insights:
+==============================
+
+1. Dataset Composition: Found 1440 total speech clips.
+2. Distribution: The RAVDESS dataset is perfectly balanced across emotions,
+   with 192 samples for calm, happy, sad, angry, fearful, disgust, surprised
+   (each actor performs 2 repetitions of 2 statements at 2 levels of intensity),
+   and 96 samples for neutral (since neutral only has normal intensity).
+
+3. Waveform Observations:
+   - Highly energetic emotions (angry, surprised, happy) exhibit higher amplitude peaks
+     and wider signal fluctuations compared to lower-energy emotions (neutral, calm, sad).
+   - Sadness and calm show a smoother, less abrupt envelope, suggesting softer articulation.
+
+4. Spectrogram Observations:
+   - Angry and fearful expressions show substantial energy at higher frequencies (up to 8kHz and beyond),
+     reflecting sharper voice quality, shouting, or hyper-articulation.
+   - Sad and neutral spectrograms have energy concentrated primarily at lower frequencies
+     with minimal high-frequency activation, aligning with their subdued vocal qualities.
+   - Disgust shows a distinct harmonic structure and slower transition speeds.
